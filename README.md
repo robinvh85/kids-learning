@@ -39,7 +39,7 @@ Chạy thử với emulator: chạy Firebase Auth + Firestore emulator ở cổn
 | Thư mục | Nội dung |
 |---|---|
 | `src/content/` | Bài học (`tieng-viet.ts`, `toan.ts`), schema zod, mọi câu nói (`speech.ts`) |
-| `src/activities/` | Mỗi dạng bài một component: nghe chọn, ghép âm, tô chữ, đếm, so sánh, tách số |
+| `src/activities/` | Mỗi dạng bài một component: nghe chọn, ghép âm, đánh vần, đếm, so sánh, tách số |
 | `src/engine/` | Âm thanh, lưu tiến độ (`ProgressRepository`), ôn tập ngắt quãng, router |
 | `src/screens/` | Trang chủ, bản đồ bài, màn học, khu Ba mẹ |
 | `scripts/` | Sinh audio bằng Google TTS |

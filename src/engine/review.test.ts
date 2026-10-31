@@ -35,6 +35,15 @@ describe('dueReviews', () => {
     }
     expect(dueReviews(items, DAY).map((i) => i.skill)).toEqual(['b', 'a'])
   })
+
+  it('skips saved activities of a type that was removed', () => {
+    const traced = { type: 'trace', char: 'a', skill: 'viet:a' } as unknown as Activity
+    const items = {
+      a: { skill: 'a', activity: count(1), box: 1, due: 0, lapses: 0 },
+      'viet:a': { skill: 'viet:a', activity: traced, box: 1, due: 0, lapses: 3 },
+    }
+    expect(dueReviews(items, DAY).map((i) => i.skill)).toEqual(['a'])
+  })
 })
 
 describe('starsFor', () => {

@@ -1,4 +1,4 @@
-import type { Activity } from '../content/schema.ts'
+import { Activity } from '../content/schema.ts'
 import type { ReviewItem } from './repository.ts'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -27,9 +27,15 @@ export function updateReviews(existing: Record<string, ReviewItem>, answers: Ans
   return [...out.values()]
 }
 
+// Saved progress can hold activities of a type the app no longer has (tracing was
+// removed): those are never shown again.
+export function isCurrent(item: ReviewItem): boolean {
+  return Activity.safeParse(item.activity).success
+}
+
 export function dueReviews(items: Record<string, ReviewItem> | undefined, now = Date.now(), limit = 8): ReviewItem[] {
   return Object.values(items ?? {})
-    .filter((i) => i.due <= now && i.box < 5)
+    .filter((i) => i.due <= now && i.box < 5 && isCurrent(i))
     .sort((a, b) => a.box - b.box || b.lapses - a.lapses)
     .slice(0, limit)
 }

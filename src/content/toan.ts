@@ -1,5 +1,5 @@
 // Order follows Toán 1, tập một (Kết nối tri thức), chủ đề 1 "Các số từ 0 đến 10".
-import { bond, chooseNumber, compare, count, introNumber, make, trace } from './helpers.ts'
+import { bond, chooseNumber, compare, count, introNumber, make } from './helpers.ts'
 import type { CourseInput } from './schema.ts'
 
 export const toan: CourseInput = {
@@ -19,8 +19,6 @@ export const toan: CourseInput = {
         count('🐟', 2),
         introNumber(0, '🍎'),
         count('🐟', 0),
-        trace('1'),
-        trace('2'),
         chooseNumber(1),
       ],
     },
@@ -36,7 +34,6 @@ export const toan: CourseInput = {
         count('🍌', 4),
         introNumber(5, '🌸'),
         count('⭐', 5),
-        trace('3'),
         make('🍎', 4),
         chooseNumber(5),
       ],
@@ -53,7 +50,6 @@ export const toan: CourseInput = {
         count('🐶', 7),
         introNumber(8, '🎈'),
         count('🦋', 8),
-        trace('6'),
         make('🍓', 7),
         chooseNumber(8),
       ],
@@ -68,7 +64,6 @@ export const toan: CourseInput = {
         count('🐱', 9),
         introNumber(10, '⭐'),
         count('🍎', 10),
-        trace('9'),
         make('🌸', 9),
         chooseNumber(10),
         count('🐟', 6),

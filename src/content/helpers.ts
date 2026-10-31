@@ -29,10 +29,6 @@ export function introNumber(n: number, item: string): A {
   }
 }
 
-export function trace(char: string): A {
-  return { type: 'trace', char, skill: /\d/.test(char) ? `viet-so:${char}` : `viet:${char}` }
-}
-
 export function chooseLetter(answer: string, others: string[]): A {
   return {
     type: 'choose',

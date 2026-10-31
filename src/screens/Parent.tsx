@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { COURSES } from '../content/index.ts'
 import { navigate } from '../engine/router.ts'
 import { totalStars, useProgress } from '../engine/store.ts'
+import { isCurrent } from '../engine/review.ts'
 import { usedSeconds } from '../engine/usage.ts'
 import { BackButton, Emoji, Stars } from '../components/ui.tsx'
 import { ProfileForm } from './Home.tsx'
 
 const SKILL_LABELS: Record<string, string> = {
-  am: 'âm', tieng: 'tiếng', thanh: 'dấu', viet: 'tô chữ', 'viet-so': 'tô số',
+  am: 'âm', tieng: 'tiếng', thanh: 'dấu',
   so: 'số', dem: 'đếm', sosanh: 'so sánh', gom: 'tách số',
 }
 const TONE_LABELS: Record<string, string> = { huyen: 'huyền', sac: 'sắc', hoi: 'hỏi', nga: 'ngã', nang: 'nặng' }
@@ -42,7 +43,7 @@ export function Parent() {
           <h2 className="text-2xl font-extrabold">Hồ sơ của bé</h2>
           {profiles.map((p) => {
             const weak = Object.values(reviews[p.id] ?? {})
-              .filter((r) => r.lapses > 0)
+              .filter((r) => r.lapses > 0 && isCurrent(r))
               .sort((a, b) => b.lapses - a.lapses)
               .slice(0, 6)
             return (

@@ -56,12 +56,6 @@ export const SpellActivity = z.object({
   picture: Picture.optional(),
 })
 
-export const TraceActivity = z.object({
-  ...base,
-  type: z.literal('trace'),
-  char: z.string().min(1).max(2),
-})
-
 export const CountActivity = z.object({
   ...base,
   type: z.literal('count'),
@@ -100,7 +94,6 @@ export const Activity = z.discriminatedUnion('type', [
   ChooseActivity,
   CombineActivity,
   SpellActivity,
-  TraceActivity,
   CountActivity,
   MakeActivity,
   CompareActivity,

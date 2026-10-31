@@ -4,7 +4,6 @@ import { Combine } from './Combine.tsx'
 import { Intro } from './Intro.tsx'
 import { Bond, Compare, Count, Make } from './Numbers.tsx'
 import { Spell } from './Spell.tsx'
-import { Trace } from './Trace.tsx'
 
 export function ActivityView({ activity, onComplete }: { activity: Activity; onComplete: (firstTry: boolean) => void }) {
   switch (activity.type) {
@@ -16,8 +15,6 @@ export function ActivityView({ activity, onComplete }: { activity: Activity; onC
       return <Combine activity={activity} onComplete={onComplete} />
     case 'spell':
       return <Spell activity={activity} onComplete={onComplete} />
-    case 'trace':
-      return <Trace activity={activity} onComplete={onComplete} />
     case 'count':
       return <Count activity={activity} onComplete={onComplete} />
     case 'make':

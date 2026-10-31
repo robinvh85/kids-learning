@@ -66,8 +66,6 @@ export const FEEDBACK = {
   correct: ['Đúng rồi!', 'Giỏi quá!', 'Tuyệt vời!', 'Bé làm tốt lắm!'],
   wrong: ['Thử lại nhé!', 'Chưa đúng rồi, bé thử lại nào!'],
   lessonDone: 'Bé đã học xong bài này. Hoan hô bé!',
-  traceDone: 'Bé tô đẹp quá!',
-  traceMessy: 'Bé tô theo nét chữ nhé!',
   spellYourTurn: 'Bây giờ bé chạm vào từng chữ để đánh vần nhé!',
 } as const
 
@@ -116,8 +114,6 @@ export function promptOf(a: Activity): string[] {
       return [`Bé hãy ghép tiếng ${a.result}`]
     case 'spell':
       return [`Mình cùng đánh vần tiếng ${a.result} nhé`]
-    case 'trace':
-      return /\d/.test(a.char) ? [`Bé hãy tô số ${numberWord(Number(a.char))}`] : [`Bé hãy tô chữ ${soundOf(a.char)}`]
     case 'count':
       return [`Có bao nhiêu ${itemName(a.item)}?`]
     case 'make':
