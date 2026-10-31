@@ -1,6 +1,6 @@
 // Generates the same hard sentences in every Vietnamese voice so a voice can be chosen
 // by ear on the #/voices page. Usage: npm run tts:samples
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { apiKey, listVoices, pool, synthesize } from './google-tts.ts'
 
 const OUT = 'public/audio/samples'
@@ -30,7 +30,8 @@ const key = apiKey()
 const voices = await listVoices(key)
 console.log(`Tìm thấy ${voices.length} giọng vi-VN: ${voices.map((v) => v.name).join(', ')}`)
 
-rmSync(OUT, { recursive: true, force: true })
+// Files already generated are kept, so a run stopped by the quota can simply be repeated.
+// After editing SAMPLES, delete public/audio/samples first.
 mkdirSync(OUT, { recursive: true })
 
 const manifest = { generatedAt: new Date().toISOString(), samples: SAMPLES, voices: [] as { name: string; files: string[] }[] }
@@ -38,12 +39,9 @@ const failed: string[] = []
 
 for (const voice of voices) {
   const files = SAMPLES.map((_, i) => `${voice.name}-${String(i).padStart(2, '0')}.mp3`)
+  const missing = SAMPLES.map((text, i) => ({ text, file: files[i] })).filter(({ file }) => !existsSync(`${OUT}/${file}`))
   try {
-    await pool(
-      SAMPLES.map((text, i) => ({ text, file: files[i] })),
-      4,
-      async ({ text, file }) => writeFileSync(`${OUT}/${file}`, await synthesize(key, voice.name, text, 0.9)),
-    )
+    await pool(missing, 2, async ({ text, file }) => writeFileSync(`${OUT}/${file}`, await synthesize(key, voice.name, text, 0.9)))
     manifest.voices.push({ name: voice.name, files })
     console.log(`✓ ${voice.name}`)
   } catch (e) {

@@ -33,9 +33,16 @@ export async function synthesize(key: string, voice: string, text: string, speak
         audioConfig: { audioEncoding: 'MP3', ...(rate ? { speakingRate: rate } : {}) },
       }),
     })
-  let res = await request(speakingRate)
+  let rate: number | undefined = speakingRate
+  let res = await request(rate)
   // Some voice families reject speakingRate; fall back to the default speed for them.
-  if (res.status === 400) res = await request()
+  if (res.status === 400) res = await request((rate = undefined))
+  // Chirp3-HD voices have a low per-minute quota: wait and retry instead of failing.
+  for (let attempt = 0, wait = 15; res.status === 429 && attempt < 6; attempt++, wait *= 2) {
+    console.log(`  hết quota trong phút, chờ ${wait}s rồi thử lại (${voice})`)
+    await new Promise((r) => setTimeout(r, wait * 1000))
+    res = await request(rate)
+  }
   if (!res.ok) throw new Error(`synthesize "${text}" (${voice}): ${res.status} ${await res.text()}`)
   const body = (await res.json()) as { audioContent: string }
   return Buffer.from(body.audioContent, 'base64')
