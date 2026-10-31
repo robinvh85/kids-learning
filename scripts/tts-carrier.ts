@@ -1,6 +1,6 @@
 // Some syllables come out wrong when the voice is given them alone: "be" is read as
-// the English word "bee", and a bare "a" or "e" comes back as silence. These are said
-// inside a short Vietnamese phrase instead, and the syllable is cut out of it.
+// the English word "bee", "ê" as "i", and a bare "a" or "e" comes back as silence.
+// These are said inside a short Vietnamese phrase instead, and the syllable is cut out.
 // Needs ffmpeg (with libmp3lame) on the PATH.
 import { spawnSync } from 'node:child_process'
 import { SAMPLE_RATE, synthesize } from './google-tts.ts'
@@ -12,6 +12,7 @@ export type Carrier = { text: string; take: number }
 export const CARRIERS: Record<string, Carrier> = {
   a: { text: 'bờ, a, ba.', take: 1 },
   e: { text: 'bờ, e, be.', take: 1 },
+  ê: { text: 'bờ, ê, bê.', take: 1 },
   be: { text: 'bờ, e, be.', take: 2 },
 }
 
