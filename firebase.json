@@ -9,7 +9,7 @@
   },
   "hosting": {
     "public": "dist",
-    "ignore": ["firebase.json", "**/.*"],
+    "ignore": ["firebase.json", "**/.*", "audio/samples/**"],
     "headers": [
       {
         "source": "/assets/**",
