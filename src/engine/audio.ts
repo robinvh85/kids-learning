@@ -77,6 +77,22 @@ export async function speak(...texts: (string | undefined)[]): Promise<void> {
   }
 }
 
+// Like speak(), but calls onStep before each sentence so the screen can follow along.
+// Resolves to false if interrupted by another speak call.
+export async function speakSteps(texts: string[], onStep: (index: number) => void, gapMs = 250): Promise<boolean> {
+  stopSpeaking()
+  const mine = ++token
+  for (let i = 0; i < texts.length; i++) {
+    if (mine !== token) return false
+    onStep(i)
+    const file = manifest?.files[texts[i]]
+    await (file ? playFile(file) : playSynth(texts[i]))
+    if (mine !== token) return false
+    await new Promise((r) => setTimeout(r, gapMs))
+  }
+  return mine === token
+}
+
 export function stopSpeaking(): void {
   token++
   current?.stop()

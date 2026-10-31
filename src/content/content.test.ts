@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { COURSES } from './index.ts'
-import { allSpeech, explainOf, promptOf, toneChoices, withTone, TONE_MARKS } from './speech.ts'
+import { allSpeech, explainOf, promptOf, spellSteps, toneChoices, withTone, TONE_MARKS } from './speech.ts'
 
 const activities = COURSES.flatMap((c) => c.lessons.flatMap((l) => l.activities.map((a) => ({ lesson: l.id, a }))))
 
@@ -19,13 +19,13 @@ describe('course content', () => {
     }
   })
 
-  it('spells every combine result from its parts and tone', () => {
+  it('spells every combine and spell result from its parts and tone', () => {
     for (const { lesson, a } of activities) {
-      if (a.type !== 'combine') continue
+      if (a.type !== 'combine' && a.type !== 'spell') continue
       const built = (a.parts.join('') + TONE_MARKS[a.tone]).normalize('NFC')
       // The mark sits on the vowel, which is the last part in these CV syllables.
       expect(built, lesson).toBe(a.result.normalize('NFC'))
-      expect(a.extra.some((e) => a.parts.includes(e)), `${lesson}: extra tile duplicates a part`).toBe(false)
+      if (a.type === 'combine') expect(a.extra.some((e) => a.parts.includes(e)), `${lesson}: extra tile duplicates a part`).toBe(false)
     }
   })
 
@@ -45,8 +45,20 @@ describe('course content', () => {
       explainOf(a)
     }
     const all = allSpeech(COURSES)
-    expect(all).toContain('bờ, a, ba, huyền, bà')
+    for (const step of ['bờ', 'a', 'ba', 'huyền', 'bà']) expect(all).toContain(step)
     expect(all).toContain('Có bao nhiêu con cá?')
+  })
+})
+
+describe('spellSteps', () => {
+  it('reads each part, the joined syllable, the tone, then the word', () => {
+    expect(spellSteps({ parts: ['b', 'a'], tone: 'ngang', result: 'ba' })).toEqual([
+      { text: 'bờ', light: [0] },
+      { text: 'a', light: [1] },
+      { text: 'ba', light: [0, 1] },
+      { text: 'ba', light: ['result'] },
+    ])
+    expect(spellSteps({ parts: ['b', 'a'], tone: 'huyen', result: 'bà' }).map((s) => s.text)).toEqual(['bờ', 'a', 'ba', 'huyền', 'bà'])
   })
 })
 

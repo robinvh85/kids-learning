@@ -1,6 +1,7 @@
 // Order follows Tiếng Việt 1, tập một (Kết nối tri thức). Example words are our own,
-// picked so each lesson only uses letters and tones already taught.
-import { chooseLetter, chooseWord, combine, introLetter, introTone, trace } from './helpers.ts'
+// picked so each lesson only uses letters and tones already taught. Every new letter
+// or tone is followed straight away by a spelling screen ("bờ – a – ba → ba").
+import { chooseLetter, chooseWord, combine, introLetter, introTone, spell, trace } from './helpers.ts'
 import type { CourseInput } from './schema.ts'
 
 export const tiengViet: CourseInput = {
@@ -28,10 +29,12 @@ export const tiengViet: CourseInput = {
       icon: 'b',
       activities: [
         introLetter('B', 'b', { word: 'bà', picture: '👵' }),
+        spell(['b', 'a'], 'ba'),
         chooseLetter('b', ['d', 'p']),
         trace('b'),
         combine(['b', 'a'], 'ba', { extra: ['c'] }),
         introTone('huyen'),
+        spell(['b', 'a'], 'bà', { tone: 'huyen', picture: '👵' }),
         combine(['b', 'a'], 'bà', { tone: 'huyen', picture: '👵' }),
         chooseWord('bà', ['ba']),
       ],
@@ -43,10 +46,12 @@ export const tiengViet: CourseInput = {
       icon: 'c',
       activities: [
         introLetter('C', 'c', { word: 'cá', picture: '🐟' }),
+        spell(['c', 'a'], 'ca'),
         chooseLetter('c', ['o', 'e']),
         trace('c'),
         combine(['c', 'a'], 'ca', { extra: ['b'] }),
         introTone('sac'),
+        spell(['c', 'a'], 'cá', { tone: 'sac', picture: '🐟' }),
         combine(['c', 'a'], 'cá', { tone: 'sac', picture: '🐟' }),
         combine(['c', 'a'], 'cà', { tone: 'huyen', picture: '🍆' }),
         chooseWord('cá', ['cà', 'ca'], '🐟'),
@@ -59,7 +64,9 @@ export const tiengViet: CourseInput = {
       icon: 'e',
       activities: [
         introLetter('E', 'e', { word: 'bé', picture: '👶' }),
+        spell(['b', 'e'], 'be'),
         introLetter('Ê', 'ê', { word: 'bê', picture: '🐮' }),
+        spell(['b', 'ê'], 'bê', { picture: '🐮' }),
         chooseLetter('ê', ['e', 'c']),
         trace('e'),
         trace('ê'),
@@ -74,6 +81,7 @@ export const tiengViet: CourseInput = {
       source: 'Tiếng Việt 1 – Bài 5',
       icon: '⭐',
       activities: [
+        spell(['b', 'e'], 'bé', { tone: 'sac', picture: '👶' }),
         chooseLetter('b', ['d', 'e']),
         chooseLetter('e', ['ê', 'c']),
         chooseLetter('c', ['a', 'b']),
@@ -91,10 +99,12 @@ export const tiengViet: CourseInput = {
       icon: 'o',
       activities: [
         introLetter('O', 'o', { word: 'bò', picture: '🐄' }),
+        spell(['b', 'o'], 'bò', { tone: 'huyen', picture: '🐄' }),
         chooseLetter('o', ['a', 'c']),
         trace('o'),
         combine(['b', 'o'], 'bò', { tone: 'huyen', picture: '🐄' }),
         introTone('hoi'),
+        spell(['c', 'o'], 'cỏ', { tone: 'hoi', picture: '🌿' }),
         combine(['c', 'o'], 'cỏ', { tone: 'hoi', picture: '🌿' }),
         chooseWord('bò', ['bó', 'bỏ'], '🐄'),
         chooseWord('cỏ', ['cò', 'có'], '🌿'),
@@ -107,11 +117,13 @@ export const tiengViet: CourseInput = {
       icon: 'ô',
       activities: [
         introLetter('Ô', 'ô', { word: 'bố', picture: '👨' }),
+        spell(['b', 'ô'], 'bố', { tone: 'sac', picture: '👨' }),
         chooseLetter('ô', ['o', 'a']),
         trace('ô'),
         combine(['b', 'ô'], 'bố', { tone: 'sac', picture: '👨', extra: ['o'] }),
         combine(['c', 'ô'], 'cô', { picture: '👩‍🏫' }),
         introTone('nang'),
+        spell(['c', 'o'], 'cọ', { tone: 'nang', picture: '🖌️' }),
         combine(['c', 'o'], 'cọ', { tone: 'nang', picture: '🖌️' }),
         chooseWord('bố', ['bổ', 'bộ'], '👨'),
       ],
@@ -123,7 +135,9 @@ export const tiengViet: CourseInput = {
       icon: 'đ',
       activities: [
         introLetter('D', 'd', { word: 'dê', picture: '🐐' }),
+        spell(['d', 'ê'], 'dê', { picture: '🐐' }),
         introLetter('Đ', 'đ', { word: 'đá', picture: '🪨' }),
+        spell(['đ', 'a'], 'đá', { tone: 'sac', picture: '🪨' }),
         chooseLetter('đ', ['d', 'b']),
         chooseLetter('d', ['b', 'đ']),
         trace('d'),
@@ -141,11 +155,13 @@ export const tiengViet: CourseInput = {
       icon: 'ơ',
       activities: [
         introLetter('Ơ', 'ơ', { word: 'bơ', picture: '🥑' }),
+        spell(['b', 'ơ'], 'bơ', { picture: '🥑' }),
         chooseLetter('ơ', ['o', 'ô']),
         trace('ơ'),
         combine(['b', 'ơ'], 'bơ', { picture: '🥑', extra: ['ô'] }),
         combine(['c', 'ơ'], 'cờ', { tone: 'huyen', picture: '🚩' }),
         introTone('nga'),
+        spell(['đ', 'ô'], 'đỗ', { tone: 'nga', picture: '🫘' }),
         combine(['đ', 'ô'], 'đỗ', { tone: 'nga', picture: '🫘' }),
         chooseWord('cờ', ['cỡ', 'cơ'], '🚩'),
       ],
@@ -156,6 +172,7 @@ export const tiengViet: CourseInput = {
       source: 'Tiếng Việt 1 – Bài 10',
       icon: '⭐',
       activities: [
+        spell(['đ', 'o'], 'đỏ', { tone: 'hoi', picture: '🔴' }),
         chooseLetter('o', ['ô', 'ơ']),
         chooseLetter('ơ', ['o', 'ô']),
         chooseLetter('đ', ['d', 'b']),

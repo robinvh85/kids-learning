@@ -1,15 +1,20 @@
 import { motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import type { ActivityOf } from '../content/schema.ts'
-import { promptOf, soundOf, spellText, toneChoices, withTone } from '../content/speech.ts'
+import { promptOf, soundOf, toneChoices, withTone } from '../content/speech.ts'
 import { speak } from '../engine/audio.ts'
 import { Emoji, SpeakerButton } from '../components/ui.tsx'
 import { shake, useFeedback, type ActivityProps } from './feedback.ts'
+import { SpellBoard } from './Spell.tsx'
+import { useSpellPlayback } from './spellPlayback.ts'
 
 // The child taps the sounds in order to build the syllable (b + a = ba),
-// then picks the tone mark if there is one (ba + huyền = bà).
+// then picks the tone mark if there is one (ba + huyền = bà). Once done, the spelling
+// board replays "bờ – a – ba – huyền → bà" with each part lighting up.
 export function Combine({ activity, onComplete }: ActivityProps<ActivityOf<'combine'>>) {
   const { solved, shakeKey, showHint, correct, wrong } = useFeedback(activity, onComplete)
+  const spelling = useSpellPlayback(activity)
+  const finish = () => correct(spelling.play)
   const [placed, setPlaced] = useState(0)
   const [wrongTile, setWrongTile] = useState<number | null>(null)
   const tiles = useMemo(() => {
@@ -31,7 +36,7 @@ export function Combine({ activity, onComplete }: ActivityProps<ActivityOf<'comb
       setPlaced(next)
       if (next === activity.parts.length) {
         if (needsTone) speak(soundOf(tile.label), base)
-        else correct(spellText(activity))
+        else finish()
       } else {
         speak(soundOf(tile.label))
       }
@@ -48,29 +53,31 @@ export function Combine({ activity, onComplete }: ActivityProps<ActivityOf<'comb
         <SpeakerButton texts={promptOf(activity)} />
       </div>
 
-      <div className="flex items-end gap-3">
-        {activity.parts.map((part, i) => (
-          <div
-            key={i}
-            className={`flex h-36 min-w-32 items-center justify-center rounded-3xl border-4 border-dashed px-4 font-school text-8xl font-bold ${
-              i < placed ? 'border-orange bg-orange-soft text-ink' : 'border-line bg-card/60 text-transparent'
-            }`}
-          >
-            {i < placed ? part : '·'}
-          </div>
-        ))}
-        {needsTone && partsDone && (
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className={`ml-4 flex h-36 items-center rounded-3xl border-4 px-6 font-school text-8xl font-bold ${
-              solved ? 'border-green bg-green-soft' : 'border-line bg-card'
-            }`}
-          >
-            {solved ? activity.result : base}
-          </motion.div>
-        )}
-      </div>
+      {solved ? (
+        <SpellBoard word={activity} lit={spelling.lit} />
+      ) : (
+        <div className="flex items-end gap-3">
+          {activity.parts.map((part, i) => (
+            <div
+              key={i}
+              className={`flex h-36 min-w-32 items-center justify-center rounded-3xl border-4 border-dashed px-4 font-school text-8xl font-bold ${
+                i < placed ? 'border-orange bg-orange-soft text-ink' : 'border-line bg-card/60 text-transparent'
+              }`}
+            >
+              {i < placed ? part : '·'}
+            </div>
+          ))}
+          {needsTone && partsDone && (
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="ml-4 flex h-36 items-center rounded-3xl border-4 border-line bg-card px-6 font-school text-8xl font-bold"
+            >
+              {base}
+            </motion.div>
+          )}
+        </div>
+      )}
 
       {!partsDone && (
         <div className="flex flex-wrap justify-center gap-5">
@@ -107,7 +114,7 @@ export function Combine({ activity, onComplete }: ActivityProps<ActivityOf<'comb
                 key={tone}
                 whileTap={{ scale: 0.9 }}
                 animate={showHint && isAnswer ? { scale: [1, 1.08, 1], transition: { repeat: Infinity, duration: 1.2 } } : undefined}
-                onClick={() => (isAnswer ? correct(spellText(activity)) : wrong(syllable))}
+                onClick={() => (isAnswer ? finish() : wrong(syllable))}
                 className={`flex h-32 min-w-32 items-center justify-center rounded-3xl border-4 px-5 font-school text-7xl font-bold shadow-[0_8px_0_var(--color-line)] ${
                   showHint && isAnswer ? 'border-sun bg-card' : 'border-line bg-card'
                 }`}

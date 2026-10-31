@@ -26,13 +26,20 @@ export function useFeedback(activity: Activity, onComplete: (firstTry: boolean) 
     }
   }, [activity])
 
-  async function correct(extra?: string) {
+  // `then` is either a sentence to say after the praise, or an async step (such as
+  // playing the spelling animation) to run before moving on.
+  async function correct(then?: string | (() => Promise<unknown>)) {
     if (done.current) return
     done.current = true
     setSolved(true)
     sfx.correct()
     const started = Date.now()
-    await speak(pick(FEEDBACK.correct), extra ?? explainOf(activity))
+    if (typeof then === 'function') {
+      await speak(pick(FEEDBACK.correct))
+      await then()
+    } else {
+      await speak(pick(FEEDBACK.correct), then ?? explainOf(activity))
+    }
     // Leave a moment to enjoy the success even when no audio played.
     const wait = Math.max(0, 900 - (Date.now() - started))
     setTimeout(() => onComplete(mistakes === 0), wait)

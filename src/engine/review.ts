@@ -7,10 +7,13 @@ const INTERVALS = [0, 0, 1, 3, 7, 14]
 
 export type Answer = { activity: Activity; firstTry: boolean }
 
+// Screens that show and tell rather than test: not graded, not reviewed.
+const isPractice = (a: Activity) => a.type === 'intro' || a.type === 'spell'
+
 export function updateReviews(existing: Record<string, ReviewItem>, answers: Answer[], now = Date.now()): ReviewItem[] {
   const out = new Map<string, ReviewItem>()
   for (const { activity, firstTry } of answers) {
-    if (!activity.skill || activity.type === 'intro') continue
+    if (!activity.skill || isPractice(activity)) continue
     const prev = out.get(activity.skill) ?? existing[activity.skill]
     const box = firstTry ? Math.min((prev?.box ?? 1) + 1, 5) : 1
     out.set(activity.skill, {
@@ -32,7 +35,7 @@ export function dueReviews(items: Record<string, ReviewItem> | undefined, now = 
 }
 
 export function starsFor(answers: Answer[]): number {
-  const graded = answers.filter((a) => a.activity.type !== 'intro')
+  const graded = answers.filter((a) => !isPractice(a.activity))
   if (graded.length === 0) return 3
   const ratio = graded.filter((a) => a.firstTry).length / graded.length
   return ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1

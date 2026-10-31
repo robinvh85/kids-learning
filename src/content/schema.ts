@@ -45,6 +45,17 @@ export const CombineActivity = z.object({
   picture: Picture.optional(),
 })
 
+// Watch and listen: "bờ – a – ba → ba", each part lighting up as it is read,
+// then the child taps along to spell it themselves.
+export const SpellActivity = z.object({
+  ...base,
+  type: z.literal('spell'),
+  parts: z.array(z.string()).min(2),
+  tone: Tone.default('ngang'),
+  result: z.string(),
+  picture: Picture.optional(),
+})
+
 export const TraceActivity = z.object({
   ...base,
   type: z.literal('trace'),
@@ -88,6 +99,7 @@ export const Activity = z.discriminatedUnion('type', [
   IntroActivity,
   ChooseActivity,
   CombineActivity,
+  SpellActivity,
   TraceActivity,
   CountActivity,
   MakeActivity,

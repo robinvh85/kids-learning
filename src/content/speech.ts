@@ -68,6 +68,7 @@ export const FEEDBACK = {
   lessonDone: 'Bé đã học xong bài này. Hoan hô bé!',
   traceDone: 'Bé tô đẹp quá!',
   traceMessy: 'Bé tô theo nét chữ nhé!',
+  spellYourTurn: 'Bây giờ bé chạm vào từng chữ để đánh vần nhé!',
 } as const
 
 const MARKS = /[\u0300\u0301\u0303\u0309\u0323]/
@@ -91,11 +92,18 @@ export function toneChoices(answer: Tone): Tone[] {
   return choices.sort((a, b) => TONES.indexOf(a) - TONES.indexOf(b))
 }
 
-export function spellText(a: ActivityOf<'combine'>): string {
-  const base = a.parts.join('')
-  const steps = [...a.parts.map(soundOf), base]
-  if (a.tone !== 'ngang') steps.push(TONE_NAMES[a.tone], a.result)
-  return steps.join(', ')
+// What lights up on the spelling board while a step is read.
+export type SpellLight = number | 'mark' | 'result'
+export type SpellStep = { text: string; light: SpellLight[] }
+
+// "bờ – a – ba → ba" or "bờ – a – ba – huyền → bà". Each step is a separate
+// recording so the board can light up exactly the part being read.
+export function spellSteps(a: { parts: string[]; tone: Tone; result: string }): SpellStep[] {
+  const steps: SpellStep[] = a.parts.map((p, i) => ({ text: soundOf(p), light: [i] }))
+  steps.push({ text: a.parts.join(''), light: a.parts.map((_, i) => i) })
+  if (a.tone !== 'ngang') steps.push({ text: TONE_NAMES[a.tone], light: ['mark'] })
+  steps.push({ text: a.result, light: ['result'] })
+  return steps
 }
 
 export function promptOf(a: Activity): string[] {
@@ -106,6 +114,8 @@ export function promptOf(a: Activity): string[] {
       return [a.prompt]
     case 'combine':
       return [`Bé hãy ghép tiếng ${a.result}`]
+    case 'spell':
+      return [`Mình cùng đánh vần tiếng ${a.result} nhé`]
     case 'trace':
       return /\d/.test(a.char) ? [`Bé hãy tô số ${numberWord(Number(a.char))}`] : [`Bé hãy tô chữ ${soundOf(a.char)}`]
     case 'count':
@@ -124,8 +134,6 @@ export function promptOf(a: Activity): string[] {
 // What is said after the child answers correctly, reinforcing the concept.
 export function explainOf(a: Activity): string | undefined {
   switch (a.type) {
-    case 'combine':
-      return spellText(a)
     case 'count':
       return `${capitalize(numberWord(a.n))} ${itemName(a.item)}`
     case 'compare':
@@ -171,9 +179,9 @@ export function allSpeech(courses: Course[]): string[] {
         promptOf(a).forEach(add)
         add(explainOf(a))
         if (a.type === 'choose') a.options.forEach((o) => add(optionSpeech(a, o.label)))
+        if (a.type === 'combine' || a.type === 'spell') spellSteps(a).forEach((s) => add(s.text))
         if (a.type === 'combine') {
-          ;[...a.parts, ...a.extra].forEach((p) => add(soundOf(p)))
-          add(a.parts.join(''))
+          a.extra.forEach((p) => add(soundOf(p)))
           if (a.tone !== 'ngang') toneChoices(a.tone).forEach((t) => add(withTone(a.result, t)))
         }
         if (a.type === 'compare' && a.ask === 'sign') ['lớn hơn', 'bé hơn', 'bằng'].forEach(add)

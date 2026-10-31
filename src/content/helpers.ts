@@ -68,6 +68,10 @@ export function combine(parts: string[], result: string, opts: { tone?: Tone; pi
   }
 }
 
+export function spell(parts: string[], result: string, opts: { tone?: Tone; picture?: string } = {}): A {
+  return { type: 'spell', parts, result, tone: opts.tone ?? 'ngang', picture: opts.picture, skill: `tieng:${result}` }
+}
+
 export function count(item: string, n: number): A {
   return { type: 'count', item, n, options: near(n, 3), skill: `dem:${n}` }
 }
