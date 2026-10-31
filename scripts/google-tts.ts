@@ -2,6 +2,7 @@
 import { existsSync } from 'node:fs'
 
 const API = 'https://texttospeech.googleapis.com/v1'
+export const SAMPLE_RATE = 24000
 
 export function apiKey(): string {
   if (existsSync('.env.local')) process.loadEnvFile('.env.local')
@@ -22,7 +23,15 @@ export async function listVoices(key: string): Promise<Voice[]> {
   return (body.voices ?? []).sort((a, b) => a.name.localeCompare(b.name))
 }
 
-export async function synthesize(key: string, voice: string, text: string, speakingRate: number): Promise<Buffer> {
+export type Encoding = 'MP3' | 'LINEAR16'
+
+export async function synthesize(
+  key: string,
+  voice: string,
+  text: string,
+  speakingRate: number,
+  encoding: Encoding = 'MP3',
+): Promise<Buffer> {
   const request = (rate?: number) =>
     fetch(`${API}/text:synthesize?key=${key}`, {
       method: 'POST',
@@ -30,7 +39,7 @@ export async function synthesize(key: string, voice: string, text: string, speak
       body: JSON.stringify({
         input: { text },
         voice: { languageCode: 'vi-VN', name: voice },
-        audioConfig: { audioEncoding: 'MP3', ...(rate ? { speakingRate: rate } : {}) },
+        audioConfig: { audioEncoding: encoding, ...(encoding === 'LINEAR16' ? { sampleRateHertz: SAMPLE_RATE } : {}), ...(rate ? { speakingRate: rate } : {}) },
       }),
     })
   let rate: number | undefined = speakingRate

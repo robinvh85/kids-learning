@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:
 import { COURSES } from '../src/content/index.ts'
 import { allSpeech } from '../src/content/speech.ts'
 import { apiKey, pool, synthesize } from './google-tts.ts'
+import { CARRIERS, synthesizeInCarrier } from './tts-carrier.ts'
 
 const OUT = 'public/audio'
 const RATE = 0.9
@@ -21,7 +22,10 @@ mkdirSync(OUT, { recursive: true })
 const texts = allSpeech(COURSES)
 const files: Record<string, string> = {}
 for (const text of texts) {
-  files[text] = createHash('sha1').update(`${voice}|${RATE}|${text}`).digest('hex').slice(0, 16) + '.mp3'
+  // A syllable cut out of a carrier phrase gets a new file whenever the phrase changes.
+  const carrier = CARRIERS[text]
+  const source = carrier ? `${text}|${carrier.text}#${carrier.take}` : text
+  files[text] = createHash('sha1').update(`${voice}|${RATE}|${source}`).digest('hex').slice(0, 16) + '.mp3'
 }
 
 const missing = texts.filter((t) => !existsSync(`${OUT}/${files[t]}`))
@@ -29,7 +33,9 @@ console.log(`${texts.length} câu, cần tạo mới ${missing.length} (giọng 
 
 let done = 0
 await pool(missing, 4, async (text) => {
-  writeFileSync(`${OUT}/${files[text]}`, await synthesize(key, voice, text, RATE))
+  const carrier = CARRIERS[text]
+  const audio = carrier ? await synthesizeInCarrier(key, voice, carrier, RATE) : await synthesize(key, voice, text, RATE)
+  writeFileSync(`${OUT}/${files[text]}`, audio)
   if (++done % 25 === 0) console.log(`  ${done}/${missing.length}`)
 })
 

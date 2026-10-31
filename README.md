@@ -19,6 +19,9 @@ npm run build      # bản production ở dist/
 3. Đặt `TTS_VOICE=<giọng đã chọn>` trong `.env.local`, rồi chạy `npm run tts:build`. Lệnh này sinh mp3 cho mọi câu
    trong bài học vào `public/audio/` và commit cùng code.
 
+Vài âm tiết đọc riêng lẻ bị sai ("be" thành tiếng Anh "bee", "a" và "e" ra file im lặng) nên được đọc trong một
+cụm tiếng Việt rồi cắt ra (`scripts/tts-carrier.ts`). Bước này cần `ffmpeg` có libmp3lame.
+
 Câu nào chưa có mp3 thì app dùng tạm giọng tiếng Việt của trình duyệt. Chỉ dùng cách này lúc phát triển.
 
 ## Đồng bộ tiến độ (Firebase)
