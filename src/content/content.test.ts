@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { COURSES } from './index.ts'
 import { allSpeech, explainOf, promptOf, spellSteps, toneChoices, withTone, TONE_MARKS } from './speech.ts'
 
-const activities = COURSES.flatMap((c) => c.lessons.flatMap((l) => l.activities.map((a) => ({ lesson: l.id, a }))))
+const TONE_MARK = /[̣̀́̃̉]/
+
+const activities =COURSES.flatMap((c) => c.lessons.flatMap((l) => l.activities.map((a) => ({ lesson: l.id, a }))))
 
 describe('course content', () => {
   it('has unique lesson ids', () => {
@@ -22,10 +24,26 @@ describe('course content', () => {
   it('spells every combine and spell result from its parts and tone', () => {
     for (const { lesson, a } of activities) {
       if (a.type !== 'combine' && a.type !== 'spell') continue
-      const built = (a.parts.join('') + TONE_MARKS[a.tone]).normalize('NFC')
-      // The mark sits on the vowel, which is the last part in these CV syllables.
-      expect(built, lesson).toBe(a.result.normalize('NFC'))
+      // The mark may sit inside the last part (đ + ia + ngã = đĩa), so compare without it.
+      const nfd = a.result.normalize('NFD')
+      expect(nfd.replace(TONE_MARK, '').normalize('NFC'), lesson).toBe(a.parts.join('').normalize('NFC'))
+      expect(nfd.match(TONE_MARK)?.[0] ?? '', `${lesson}: ${a.result}`).toBe(TONE_MARKS[a.tone])
       if (a.type === 'combine') expect(a.extra.some((e) => a.parts.includes(e)), `${lesson}: extra tile duplicates a part`).toBe(false)
+    }
+  })
+
+  // Distractors (letter choices, extra tiles) are exempt: early lessons have too few letters.
+  it('spells only with letters and tones taught in this lesson or earlier', () => {
+    const taught = new Set<string>()
+    for (const lesson of COURSES.find((c) => c.id === 'tieng-viet')!.lessons) {
+      for (const a of lesson.activities) if (a.type === 'intro' && a.skill) taught.add(a.skill)
+      for (const a of lesson.activities) {
+        const letters = a.type === 'combine' || a.type === 'spell' ? a.parts : []
+        for (const l of letters) expect(taught, `${lesson.id}: ${l}`).toContain(`am:${l}`)
+        if ((a.type === 'combine' || a.type === 'spell') && a.tone !== 'ngang') {
+          expect(taught, `${lesson.id}: ${a.tone}`).toContain(`thanh:${a.tone}`)
+        }
+      }
     }
   })
 

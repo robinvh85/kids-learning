@@ -14,6 +14,14 @@ export const CARRIERS: Record<string, Carrier> = {
   e: { text: 'bờ, e, be.', take: 1 },
   ê: { text: 'bờ, ê, bê.', take: 1 },
   be: { text: 'bờ, e, be.', take: 2 },
+  // Also English words, so said inside their own spelling the same way.
+  he: { text: 'hờ, e, he.', take: 2 },
+  me: { text: 'mờ, e, me.', take: 2 },
+  so: { text: 'sờ, o, so.', take: 2 },
+  // Came back as silence when said alone.
+  ư: { text: 'cờ, ư, cư.', take: 1 },
+  ke: { text: 'ca, e, ke.', take: 2 },
+  hư: { text: 'hờ, ư, hư.', take: 2 },
 }
 
 const FRAME = SAMPLE_RATE / 100 // 10 ms
