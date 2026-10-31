@@ -9,8 +9,10 @@ const SIZE = 420
 const CELL = 8
 const BRUSH = 22
 const PASS = 0.72
-// Share of painted cells that must be on the glyph, so scribbling over everything fails.
-const NEATNESS = 0.4
+// Share of the finger's path that must stay on or near the glyph (within NEAR cells),
+// so scribbling over the whole box fails while neat tracing of thin letters passes.
+const NEATNESS = 0.6
+const NEAR = 2
 
 function drawGuide(c: CanvasRenderingContext2D, char: string, font: string) {
   c.clearRect(0, 0, SIZE, SIZE)
@@ -34,7 +36,8 @@ export function Trace({ activity, onComplete }: ActivityProps<ActivityOf<'trace'
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const targets = useRef<Set<number>>(new Set())
   const covered = useRef<Set<number>>(new Set())
-  const painted = useRef<Set<number>>(new Set())
+  const near = useRef<Set<number>>(new Set())
+  const path = useRef<Set<number>>(new Set())
   const last = useRef<{ x: number; y: number } | null>(null)
   const [progress, setProgress] = useState(0)
   const [done, setDone] = useState(false)
@@ -66,9 +69,14 @@ export function Trace({ activity, onComplete }: ActivityProps<ActivityOf<'trace'
       for (let y = 0; y < SIZE; y += CELL)
         for (let x = 0; x < SIZE; x += CELL)
           if (data[((y + CELL / 2) * SIZE + x + CELL / 2) * 4 + 3] > 128) set.add((y / CELL) * (SIZE / CELL) + x / CELL)
+      const cols = SIZE / CELL
+      const around = new Set<number>()
+      for (const key of set)
+        for (let dy = -NEAR; dy <= NEAR; dy++) for (let dx = -NEAR; dx <= NEAR; dx++) around.add(key + dy * cols + dx)
       targets.current = set
+      near.current = around
       covered.current = new Set()
-      painted.current = new Set()
+      path.current = new Set()
       const c = canvasRef.current?.getContext('2d')
       if (c) drawGuide(c, activity.char, font)
     })
@@ -86,11 +94,11 @@ export function Trace({ activity, onComplete }: ActivityProps<ActivityOf<'trace'
     const r = Math.ceil(BRUSH / CELL)
     const cx = Math.floor(x / CELL)
     const cy = Math.floor(y / CELL)
+    path.current.add(cy * (SIZE / CELL) + cx)
     for (let dy = -r; dy <= r; dy++)
       for (let dx = -r; dx <= r; dx++) {
         if (dx * dx + dy * dy > r * r) continue
         const key = (cy + dy) * (SIZE / CELL) + cx + dx
-        painted.current.add(key)
         if (targets.current.has(key)) covered.current.add(key)
       }
   }
@@ -113,7 +121,8 @@ export function Trace({ activity, onComplete }: ActivityProps<ActivityOf<'trace'
     const ratio = targets.current.size ? covered.current.size / targets.current.size : 0
     setProgress(ratio)
     if (done || ratio < PASS) return
-    if (covered.current.size / painted.current.size < NEATNESS) {
+    const onPath = [...path.current].filter((key) => near.current.has(key)).length
+    if (onPath / path.current.size < NEATNESS) {
       sfx.wrong()
       speak(FEEDBACK.traceMessy)
       setProgress(0)
