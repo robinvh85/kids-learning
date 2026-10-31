@@ -36,6 +36,8 @@ export function Parent() {
           <h1 className="text-3xl font-extrabold">Khu vực ba mẹ</h1>
         </header>
 
+        <SyncSection />
+
         <section className="flex flex-col gap-4">
           <h2 className="text-2xl font-extrabold">Hồ sơ của bé</h2>
           {profiles.map((p) => {
@@ -127,5 +129,60 @@ export function Parent() {
         </section>
       </div>
     </div>
+  )
+}
+
+function SyncSection() {
+  const account = useProgress((s) => s.account)
+  const syncError = useProgress((s) => s.syncError)
+  const signIn = useProgress((s) => s.signIn)
+  const signOut = useProgress((s) => s.signOut)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function run(action: () => Promise<void>) {
+    setBusy(true)
+    setError(null)
+    try {
+      await action()
+    } catch (e) {
+      const code = (e as { code?: string }).code
+      if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') setError((e as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="flex flex-col gap-3 rounded-3xl border-2 border-line bg-card p-5">
+      <h2 className="text-2xl font-extrabold">Đồng bộ giữa các máy</h2>
+      {account ? (
+        <>
+          <p>
+            ☁️ Tiến độ đang được đồng bộ với tài khoản <b>{account.email}</b>. Đăng nhập cùng tài khoản trên máy khác để học tiếp.
+          </p>
+          {syncError && <p className="text-base text-orange">Chưa lưu được lên mạng, sẽ thử lại khi có kết nối.</p>}
+          <button
+            disabled={busy}
+            className="self-start rounded-2xl border-2 border-line px-5 py-3 font-bold"
+            onClick={() => confirm('Đăng xuất? Tiến độ vẫn được giữ trong tài khoản.') && run(signOut)}
+          >
+            Đăng xuất
+          </button>
+        </>
+      ) : (
+        <>
+          <p>Tiến độ đang lưu trên máy này. Đăng nhập Google để dùng chung tiến độ trên tablet và máy tính.</p>
+          <button
+            disabled={busy}
+            className="self-start rounded-2xl border-2 border-blue bg-blue-soft px-5 py-3 font-bold disabled:opacity-50"
+            onClick={() => run(signIn)}
+          >
+            {busy ? 'Đang đăng nhập…' : 'Đăng nhập bằng Google'}
+          </button>
+        </>
+      )}
+      {error && <p className="text-base text-orange">Lỗi: {error}</p>}
+    </section>
   )
 }

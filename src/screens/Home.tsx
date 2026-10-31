@@ -126,7 +126,32 @@ function FirstRun() {
       <h1 className="text-5xl font-extrabold">Bé Học Vui</h1>
       <p className="max-w-xl text-2xl text-muted">Ba mẹ tạo hồ sơ cho bé để bắt đầu nhé.</p>
       <ProfileForm />
+      <SignInLink />
     </div>
+  )
+}
+
+// For a parent setting up a second device: bring back the profiles from the account.
+function SignInLink() {
+  const signIn = useProgress((s) => s.signIn)
+  const [busy, setBusy] = useState(false)
+  return (
+    <button
+      disabled={busy}
+      className="text-lg font-bold text-blue underline disabled:opacity-50"
+      onClick={async () => {
+        setBusy(true)
+        try {
+          await signIn()
+        } catch (e) {
+          console.warn(e)
+        } finally {
+          setBusy(false)
+        }
+      }}
+    >
+      {busy ? 'Đang đăng nhập…' : 'Đã có tài khoản? Đăng nhập Google để lấy lại tiến độ'}
+    </button>
   )
 }
 

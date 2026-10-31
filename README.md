@@ -21,6 +21,16 @@ npm run build      # bản production ở dist/
 
 Câu nào chưa có mp3 thì app dùng tạm giọng tiếng Việt của trình duyệt. Chỉ dùng cách này lúc phát triển.
 
+## Đồng bộ tiến độ (Firebase)
+
+- Chưa đăng nhập: tiến độ lưu trên máy (`localStorage`).
+- Ba mẹ đăng nhập Google ở khu Ba mẹ: tiến độ trên máy được đẩy lên Firestore (project `kids-learning-vh`), sau đó
+  đọc ghi qua Firestore có cache offline. Dữ liệu nằm ở `parents/{uid}/...`, luật bảo mật ở `firestore.rules`.
+- Deploy: `firebase deploy --only firestore:rules,hosting` (sau `npm run build`).
+
+Chạy thử với emulator: chạy Firebase Auth + Firestore emulator ở cổng 9099 / 8080 (cần Java 21), rồi
+`VITE_FIREBASE_EMULATORS=1 npm run dev`.
+
 ## Cấu trúc
 
 | Thư mục | Nội dung |

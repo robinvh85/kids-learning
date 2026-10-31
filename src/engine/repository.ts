@@ -23,8 +23,42 @@ export const emptySnapshot = (): Snapshot => ({
   settings: { dailyMinutes: 15 },
 })
 
-// Screens talk to this interface only, so the storage backend (this device now,
-// Firestore later) can change without touching the UI.
+// What a device's local progress adds to an account's cloud progress on first sign-in.
+export type Upload = {
+  profiles: Profile[]
+  results: Record<string, LessonResult[]>
+  reviews: Record<string, ReviewItem[]>
+  settings?: Settings
+}
+
+// Children are matched by id, so profiles from two devices are kept side by side rather
+// than merged. For the same lesson the newer result wins but keeps the best stars.
+export function changesToUpload(local: Snapshot, remote: Snapshot): Upload {
+  const upload: Upload = { profiles: [], results: {}, reviews: {} }
+  for (const profile of local.profiles) {
+    if (!remote.profiles.some((p) => p.id === profile.id)) upload.profiles.push(profile)
+    const remoteResults = remote.results[profile.id] ?? {}
+    const results = Object.values(local.results[profile.id] ?? {}).flatMap((r) => {
+      const other = remoteResults[r.lessonId]
+      if (!other) return [r]
+      if (r.completedAt <= other.completedAt) return []
+      return [{ ...r, stars: Math.max(r.stars, other.stars), plays: Math.max(r.plays, other.plays) }]
+    })
+    if (results.length) upload.results[profile.id] = results
+    const remoteReviews = remote.reviews[profile.id] ?? {}
+    const reviews = Object.values(local.reviews[profile.id] ?? {}).filter((r) => !remoteReviews[r.skill])
+    if (reviews.length) upload.reviews[profile.id] = reviews
+  }
+  if (remote.profiles.length === 0) upload.settings = local.settings
+  return upload
+}
+
+export function isEmptyUpload(u: Upload): boolean {
+  return !u.profiles.length && !Object.keys(u.results).length && !Object.keys(u.reviews).length
+}
+
+// Screens talk to this interface only, so the storage backend (this device, or
+// Firestore once a parent signs in) can change without touching the UI.
 export interface ProgressRepository {
   loadAll(): Promise<Snapshot>
   saveProfile(profile: Profile): Promise<void>
@@ -59,6 +93,16 @@ export class LocalRepository implements ProgressRepository {
 
   loadAll() {
     return Promise.resolve(this.read())
+  }
+
+  // After local progress has been uploaded to an account, so it is not uploaded again
+  // into a different account later.
+  clear() {
+    try {
+      localStorage.removeItem(KEY)
+    } catch {
+      // Nothing stored.
+    }
   }
 
   saveProfile(profile: Profile) {
