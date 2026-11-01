@@ -28,3 +28,7 @@ public/audio/samples/
 
 # Firebase CLI cache
 .firebase/
+
+# Claude Code: share project skills, keep worktrees and local scratch out
+.claude/*
+!.claude/skills/
