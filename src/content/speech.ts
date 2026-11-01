@@ -124,6 +124,13 @@ export function promptOf(a: Activity): string[] {
       return ['Bé chọn dấu đúng nhé: lớn hơn, bé hơn, hay bằng nhau?']
     case 'bond':
       return [`${capitalize(numberWord(a.total))} gồm ${numberWord(a.known)} và mấy?`]
+    case 'add': {
+      const name = a.item ? itemName(a.item) : ''
+      if (a.style === 'join')
+        return [`Bên trái có ${numberWord(a.a)} ${name}, bên phải có ${numberWord(a.b)} ${name}`, `Gộp lại, có tất cả mấy ${name}?`]
+      if (a.style === 'more') return [`Có ${numberWord(a.a)} ${name}, thêm ${numberWord(a.b)} ${name}`, `Có tất cả mấy ${name}?`]
+      return [`${capitalize(numberWord(a.a))} cộng ${numberWord(a.b)} bằng mấy?`]
+    }
   }
 }
 
@@ -138,6 +145,8 @@ export function explainOf(a: Activity): string | undefined {
       return `Bên ${(a.ask === 'more') === a.left > a.right ? 'trái' : 'phải'} có ${a.ask === 'more' ? 'nhiều' : 'ít'} hơn`
     case 'bond':
       return `${capitalize(numberWord(a.total))} gồm ${numberWord(a.known)} và ${numberWord(a.total - a.known)}`
+    case 'add':
+      return `${capitalize(numberWord(a.a))} cộng ${numberWord(a.b)} bằng ${numberWord(a.a + a.b)}`
     default:
       return undefined
   }

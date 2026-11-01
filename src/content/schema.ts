@@ -89,6 +89,21 @@ export const BondActivity = z.object({
   options: z.array(z.number().int()).min(2).max(4),
 })
 
+// Addition "a + b = ?". The style sets how much support the child gets:
+// "join"   – two groups side by side, "gộp lại có tất cả mấy?"
+// "more"   – a group, then more arrive, "thêm vào, có tất cả mấy?"
+// "picture"– the equation with the items under each number
+// "number" – the equation alone.
+export const AddActivity = z.object({
+  ...base,
+  type: z.literal('add'),
+  a: z.number().int().min(0).max(10),
+  b: z.number().int().min(0).max(10),
+  item: z.string().optional(),
+  style: z.enum(['join', 'more', 'picture', 'number']),
+  options: z.array(z.number().int()).min(2).max(4),
+})
+
 export const Activity = z.discriminatedUnion('type', [
   IntroActivity,
   ChooseActivity,
@@ -98,6 +113,7 @@ export const Activity = z.discriminatedUnion('type', [
   MakeActivity,
   CompareActivity,
   BondActivity,
+  AddActivity,
 ])
 export type Activity = z.infer<typeof Activity>
 export type ActivityOf<T extends Activity['type']> = Extract<Activity, { type: T }>

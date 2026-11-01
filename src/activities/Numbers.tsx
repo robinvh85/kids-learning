@@ -288,3 +288,78 @@ export function Bond({ activity, onComplete }: ActivityProps<ActivityOf<'bond'>>
     </div>
   )
 }
+
+// Addition "a + b = ?". Story styles show the two groups (side by side for "gộp lại",
+// the second group arriving for "thêm vào"); "picture" puts the items under each number.
+export function Add({ activity, onComplete }: ActivityProps<ActivityOf<'add'>>) {
+  const fb = useFeedback(activity, onComplete)
+  const { a, b, item, style } = activity
+  const sum = a + b
+  const group = (n: number, arrive = false) => (
+    <motion.div
+      initial={arrive ? { opacity: 0, x: 80 } : false}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: arrive ? 1 : 0, duration: 0.6 }}
+      className="flex min-h-40 min-w-40 items-center justify-center rounded-[2rem] border-4 border-line bg-card px-4 py-3"
+    >
+      {n === 0 ? <span className="text-2xl text-muted">(không có gì)</span> : <ItemRows item={item!} n={n} size="text-5xl" />}
+    </motion.div>
+  )
+  const num = (n: number) => <span className="w-20 text-center text-8xl font-extrabold text-blue">{n}</span>
+  const sign = (s: string) => <span className="text-7xl font-extrabold text-orange">{s}</span>
+  const answerBox = (
+    <div
+      className={`flex h-32 w-32 items-center justify-center rounded-3xl border-4 border-dashed text-8xl font-extrabold ${
+        fb.solved ? 'border-green bg-green-soft text-green' : 'border-orange bg-card text-orange'
+      }`}
+    >
+      {fb.solved ? sum : '?'}
+    </div>
+  )
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-6">
+      {(style === 'join' || style === 'more') && (
+        <div className="flex items-center gap-4">
+          {group(a)}
+          {sign('+')}
+          {group(b, style === 'more')}
+        </div>
+      )}
+      {style === 'picture' ? (
+        <div className="flex items-start gap-4">
+          <div className="flex flex-col items-center gap-3">
+            {num(a)}
+            {group(a)}
+          </div>
+          <div className="pt-2">{sign('+')}</div>
+          <div className="flex flex-col items-center gap-3">
+            {num(b)}
+            {group(b)}
+          </div>
+          <div className="pt-2">{sign('=')}</div>
+          {answerBox}
+        </div>
+      ) : (
+        <div className="flex items-center gap-4">
+          {num(a)}
+          {sign('+')}
+          {num(b)}
+          {sign('=')}
+          {answerBox}
+        </div>
+      )}
+      <div className="flex items-center gap-6">
+        <SpeakerButton texts={promptOf(activity)} />
+        <NumberChoices
+          options={activity.options}
+          answer={sum}
+          solved={fb.solved}
+          showHint={fb.showHint}
+          shakeKey={fb.shakeKey}
+          onPick={(n) => (n === sum ? fb.correct() : fb.wrong(numberWord(n)))}
+        />
+      </div>
+    </div>
+  )
+}

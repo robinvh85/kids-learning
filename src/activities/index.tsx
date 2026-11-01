@@ -2,7 +2,7 @@ import type { Activity } from '../content/schema.ts'
 import { Choose } from './Choose.tsx'
 import { Combine } from './Combine.tsx'
 import { Intro } from './Intro.tsx'
-import { Bond, Compare, Count, Make } from './Numbers.tsx'
+import { Add, Bond, Compare, Count, Make } from './Numbers.tsx'
 import { Spell } from './Spell.tsx'
 
 export function ActivityView({ activity, onComplete }: { activity: Activity; onComplete: (firstTry: boolean) => void }) {
@@ -23,5 +23,7 @@ export function ActivityView({ activity, onComplete }: { activity: Activity; onC
       return <Compare activity={activity} onComplete={onComplete} />
     case 'bond':
       return <Bond activity={activity} onComplete={onComplete} />
+    case 'add':
+      return <Add activity={activity} onComplete={onComplete} />
   }
 }

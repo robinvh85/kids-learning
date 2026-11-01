@@ -54,6 +54,11 @@ describe('course content', () => {
         expect(a.known, lesson).toBeLessThanOrEqual(a.total)
         expect(a.options, lesson).toContain(a.total - a.known)
       }
+      if (a.type === 'add') {
+        expect(a.a + a.b, lesson).toBeLessThanOrEqual(10)
+        expect(a.options, lesson).toContain(a.a + a.b)
+        if (a.style !== 'number') expect(a.item, lesson).toBeDefined()
+      }
     }
   })
 

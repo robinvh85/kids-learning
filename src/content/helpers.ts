@@ -96,6 +96,17 @@ export function bond(total: number, known: number, item: string): A {
   return { type: 'bond', total, known, item, options: near(other, 3, total), skill: `gom:${total}` }
 }
 
+export function introPlus(): A {
+  return { type: 'intro', display: '+', say: ['Đây là dấu cộng', 'cộng'], skill: 'dau:cong' }
+}
+
+// Addition with a sum up to 10; `item` is required for every style except "number".
+export function add(a: number, b: number, style: 'join' | 'more' | 'picture' | 'number', item?: string): A {
+  if (a + b > 10) throw new Error(`${a} + ${b} is over 10`)
+  if (style !== 'number' && !item) throw new Error(`${a} + ${b}: style ${style} needs an item`)
+  return { type: 'add', a, b, style, item, options: near(a + b, 3), skill: `cong:${a}+${b}` }
+}
+
 // `size` distinct numbers in 0..max including n, close to n so the choice is meaningful.
 // Deterministic so the content (and therefore the TTS list) is stable between builds.
 function near(n: number, size: number, max = 10): number[] {
