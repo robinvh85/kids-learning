@@ -17,7 +17,7 @@ giờ force push.
 - Nhánh feature: lấy từ argument nếu có. Không có thì lấy nhánh của worktree session đang làm việc
   (`git branch --show-current`). Đang ở `main` mà main không hơn `origin/main` commit nào thì không có gì để
   merge: hỏi người dùng nhánh nào. Có nhiều nhánh có thể là ứng viên mà không rõ cái nào: hỏi.
-- Checkout main: là dòng đầu của `git worktree list` (hiện là `/Users/vh/Workspace/VH/kids-learning`).
+- Checkout main: là dòng đầu của `git worktree list` (hiện là `/Users/work/Workspace/VH/kids-learning`).
 - Session đang bị cô lập trong worktree (harness từ chối git lệnh trỏ ra ngoài worktree) thì commit hết việc
   dở, gọi `ExitWorktree` với `action: "keep"` rồi chạy các bước dưới từ checkout main. Không xoá worktree.
 
