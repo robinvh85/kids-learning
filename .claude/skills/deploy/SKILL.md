@@ -1,13 +1,14 @@
 ---
 name: deploy
-description: Merge nhánh feature vào main, push main lên GitHub rồi deploy production (Firebase Hosting + Firestore rules, project kids-learning-vh). Chỉ dùng khi người dùng nói "deploy" (hoặc gõ /deploy), không tự chạy theo suy đoán.
+description: Merge nhánh feature vào main, push main lên GitHub, deploy production (Firebase Hosting + Firestore rules, project kids-learning-vh), rồi xoá nhánh feature và worktree của nó. Chỉ dùng khi người dùng nói "deploy" (hoặc gõ /deploy), không tự chạy theo suy đoán.
 argument-hint: "[tên nhánh feature]"
 ---
 
 # Deploy Bé Học Vui
 
 Người dùng nói "deploy" là đã cho phép **đúng một lần** merge vào main, push `main` và deploy production
-trong lượt này. Lời cho phép không kéo dài sang lần sau. Không bao giờ force push.
+trong lượt này, rồi xoá nhánh feature và worktree đã merge. Lời cho phép không kéo dài sang lần sau. Không bao
+giờ force push.
 
 Đi lần lượt từng bước. Bước nào lỗi thì dừng, báo lỗi kèm output, không làm bước sau.
 
@@ -66,9 +67,26 @@ Lỗi đăng nhập thì nhờ người dùng chạy `! firebase login --reauth`
 - `curl -s https://kids-learning-vh.web.app/ | grep -o 'assets/index-[^"]*\.js'` khớp tên file trong
   `dist/index.html`, tức là bản mới đã lên.
 
-## 7. Báo cáo
+## 7. Xoá nhánh feature và worktree
+
+Chỉ làm khi bước 6 đã qua (bản mới đang chạy trên production). Chạy từ checkout main. Nhánh feature là `main`
+thì bỏ qua bước này.
+
+1. Nhánh phải đã nằm trọn trong main: `git branch --merged main` có tên nhánh. Không có thì dừng và hỏi.
+2. Tìm worktree của nhánh trong `git worktree list` (có thể không có). Nếu có:
+   - `git -C <worktree> status --porcelain` phải rỗng (file bị `.gitignore` như `.env.local`, `node_modules`
+     không hiện ở đây và không cần giữ). Còn file sửa hoặc file mới chưa track thì dừng, liệt kê và hỏi, vì xoá
+     worktree sẽ mất chúng.
+   - Session vẫn đang ở trong worktree đó thì `ExitWorktree` với `action: "keep"` trước.
+   - `git worktree unlock <worktree>` (báo "is not locked" thì bỏ qua), rồi `git worktree remove <worktree>`.
+     Không dùng `--force`: git từ chối nghĩa là còn thứ chưa lưu, dừng và hỏi.
+3. `git branch -d <nhánh>` — xoá an toàn, không dùng `-D`.
+4. Nhánh có trên remote (`git ls-remote --heads origin <nhánh>` có kết quả) thì `git push origin --delete <nhánh>`.
+5. `git worktree prune`.
+
+## 8. Báo cáo
 
 - Nhánh đã merge, commit cuối của main (short hash), merge kiểu fast-forward hay merge commit.
 - Đã push `main` (khoảng commit `old..new`).
 - URL production và kết quả bước 6.
-- Hỏi người dùng có muốn xoá nhánh feature / worktree không. Không tự xoá.
+- Đã xoá worktree nào, nhánh local / remote nào; bước 7 dừng ở đâu thì nói rõ lý do.
